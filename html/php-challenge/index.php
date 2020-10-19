@@ -124,7 +124,10 @@ style="color: #F33;">削除</a>]
 <?php
 endif;
 ?>
-    </p>
+		<a href=""><img src="images/icon_retweet.png" width=18px height=18px ></a>
+		<a href=""><img src="images/icon_heart.png" width=18px height=18px ></a>
+		</p>
+
     </div>
 <?php
 endforeach;
