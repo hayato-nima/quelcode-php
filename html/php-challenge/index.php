@@ -79,59 +79,100 @@ function makeLink($value) {
 </head>
 
 <body>
-<div id="wrap">
-  <div id="head">
-    <h1>ひとこと掲示板</h1>
-  </div>
-  <div id="content">
-  	<div style="text-align: right"><a href="logout.php">ログアウト</a></div>
-    <form action="" method="post">
-      <dl>
-        <dt><?php echo h($member['name']); ?>さん、メッセージをどうぞ</dt>
-        <dd>
-          <textarea name="message" cols="50" rows="5"><?php echo h($message); ?></textarea>
-          <input type="hidden" name="reply_post_id" value="<?php echo h($_REQUEST['res']); ?>" />
-        </dd>
-      </dl>
-      <div>
-        <p>
-          <input type="submit" value="投稿する" />
-        </p>
-      </div>
-    </form>
+	<div id="wrap">
+		<div id="head">
+			<h1>ひとこと掲示板</h1>
+		</div>
+		<div id="content">
+			<div style="text-align: right"><a href="logout.php">ログアウト</a></div>
+			<form action="" method="post">
+				<dl>
+					<dt><?php echo h($member['name']); ?>さん、メッセージをどうぞ</dt>
+					<dd>
+						<textarea name="message" cols="50" rows="5"><?php echo h($message); ?></textarea>
+						<input type="hidden" name="reply_post_id" value="<?php echo h($_REQUEST['res']); ?>" />
+					</dd>
+				</dl>
+				<div>
+					<p>
+						<input type="submit" value="投稿する" />
+					</p>
+				</div>
+			</form>
 
-<?php
-foreach ($posts as $post):
-?>
-    <div class="msg">
-    <img src="member_picture/<?php echo h($post['picture']); ?>" width="48" height="48" alt="<?php echo h($post['name']); ?>" />
-    <p><?php echo makeLink(h($post['message'])); ?><span class="name">（<?php echo h($post['name']); ?>）</span>[<a href="index.php?res=<?php echo h($post['id']); ?>">Re</a>]</p>
-    <p class="day"><a href="view.php?id=<?php echo h($post['id']); ?>"><?php echo h($post['created']); ?></a>
-		<?php
-if ($post['reply_post_id'] > 0):
-?>
-<a href="view.php?id=<?php echo
-h($post['reply_post_id']); ?>">
-返信元のメッセージ</a>
-<?php
-endif;
-?>
-<?php
-if ($_SESSION['id'] == $post['member_id']):
-?>
-[<a href="delete.php?id=<?php echo h($post['id']); ?>"
-style="color: #F33;">削除</a>]
-<?php
-endif;
-?>
-		<a href=""><img src="images/icon_retweet.png" width=18px height=18px ></a>
-		<a href=""><img src="images/icon_heart.png" width=18px height=18px ></a>
-		</p>
+			<?php
+			foreach ($posts as $post) : //id入っている
+			?>
 
-    </div>
-<?php
-endforeach;
-?>
+				<?php
+				// echo $post['message'];
+				//ここにifで名前を表示
+				var_dump($post['message'])
+				?>
+				<div class="msg">
+					<img src="member_picture/<?php echo h($post['picture']); ?>" width="48" height="48" alt="<?php echo h($post['name']); ?>" />
+					<p><?php echo makeLink(h($post['message'])); ?><span class="name">（<?php echo h($post['name']); ?>）</span>[<a href="index.php?res=<?php echo h($post['id']); ?>">Re</a>]</p>
+					<p class="day"><a href="view.php?id=<?php echo h($post['id']); ?>"><?php echo h($post['created']); ?></a>
+						<?php
+						if ($post['reply_post_id'] > 0) :
+						?>
+							<a href="view.php?id=<?php echo
+																			h($post['reply_post_id']); ?>">
+								返信元のメッセージ</a>
+						<?php
+						endif;
+						?>
+						<?php
+						if ($_SESSION['id'] == $post['member_id']) :
+						?>
+							[<a href="delete.php?id=<?php echo h($post['id']); ?>" style="color: #F33;">削除</a>]
+						<?php
+						endif;
+						?>
+
+
+
+
+						<!-- リツイートのフォーム -->
+						<form action="RT.php" method="post" >
+							<input type="hidden" name="member_id" value="<?php echo $post['member_id'];?>">
+							<input type="hidden" name="message" value="<?php echo $post['message'];?>">
+							<input type="hidden" name="reply_post_id" value="<?php echo $post['reply_post_id'];?>">
+							<input type="image" src="images/icon_retweet.png" width="15px" height="15px">
+						</form>
+						
+
+
+
+
+
+						
+						<!-- いいねのフォーム -->
+						<form action="good.php" method="post">
+							<input type="hidden" name="post_id" value=<?php echo $post['id']; ?>><!-- post['id']が送信される -->
+							<?php
+							$iines = $db->query('SELECT COUNT(*) AS good_count FROM good WHERE post_id=' . $post['id']); //$post['id]を使って件数を確認する
+							$iine = $iines->fetch();
+							if ($iine['good_count']) :
+							?>
+								<button class="red" type="submit">❤<span class="goodcount"><?php echo h($iine['good_count']); ?></span></button>
+							<?php else : ?>
+								<button type="submit">❤</button>
+							<?php endif; ?>
+						</form>
+
+
+					</p><!-- .day/ -->
+
+
+
+
+
+
+				</div>
+			<?php
+			endforeach;
+			?>
 
 <ul class="paging">
 <?php
