@@ -59,14 +59,6 @@ if (isset($_REQUEST['res'])) {
 	$message = '@' . $table['name'] . ' ' . $table['message'];
 }
 
-
-//元投稿を取得するファンクション
-// function nimasp($value)
-// {
-// 	return count()
-// }
-
-
 // htmlspecialcharsのショートカット
 function h($value)
 {
@@ -118,7 +110,9 @@ function makeLink($value)
 			?>
 
 				<?php
-				echo $post['id'];
+				// echo $post['message'];
+				//ここにifで名前を表示
+				var_dump($post['message'])
 				?>
 				<div class="msg">
 					<img src="member_picture/<?php echo h($post['picture']); ?>" width="48" height="48" alt="<?php echo h($post['name']); ?>" />
@@ -144,26 +138,31 @@ function makeLink($value)
 
 
 
+						<!-- リツイートのフォーム -->
+						<form action="RT.php" method="post" >
+							<input type="hidden" name="member_id" value="<?php echo $post['member_id'];?>">
+							<input type="hidden" name="message" value="<?php echo $post['message'];?>">
+							<input type="hidden" name="reply_post_id" value="<?php echo $post['reply_post_id'];?>">
+							<input type="image" src="images/icon_retweet.png" width="15px" height="15px">
+						</form>
+						
 
 
 
-						<!-- 作業中 -->
-						<!-- for文を使う -->
+
+
+						
+						<!-- いいねのフォーム -->
 						<form action="good.php" method="post">
 							<input type="hidden" name="post_id" value=<?php echo $post['id']; ?>><!-- post['id']が送信される -->
 							<?php
-							$iines = $db->query('SELECT COUNT(*) AS good_count FROM good WHERE post_id=' . $post['id']); //$post['id]を使って件数を確認するwhere使う
-							// var_dump($iines);
-							// var_dump($post['id']);
+							$iines = $db->query('SELECT COUNT(*) AS good_count FROM good WHERE post_id=' . $post['id']); //$post['id]を使って件数を確認する
 							$iine = $iines->fetch();
-							// var_dump($iine);
 							if ($iine['good_count']) :
-								// var_dump($post);
-								// var_dump($iine);
 							?>
-								<button type="submit">いいね赤</button>
+								<button class="red" type="submit">❤<span class="goodcount"><?php echo h($iine['good_count']); ?></span></button>
 							<?php else : ?>
-								<button type="submit">いいね</button>
+								<button type="submit">❤</button>
 							<?php endif; ?>
 						</form>
 
