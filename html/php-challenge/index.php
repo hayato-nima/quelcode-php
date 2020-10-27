@@ -106,15 +106,24 @@ function makeLink($value)
 			</form>
 
 			<?php
-			foreach ($posts as $post) : //id入っている
+			foreach ($posts as $post): //id入っている
 			?>
 
-				<?php
-				// echo $post['message'];
-				//ここにifで名前を表示
-				var_dump($post['message'])
+				<?php 
+				// var_dump($rt_count);
 				?>
+
 				<div class="msg">
+					<?php
+					if ($post['rt_member_id']  > 0){ //普通投稿は0 リツイートなら値が1以上
+					?>
+					<p class="day">
+						<?php echo ($post['rt_member_name'] . 'さんがリツイートしました');?>
+					</p>
+					<?
+					}
+					?>
+
 					<img src="member_picture/<?php echo h($post['picture']); ?>" width="48" height="48" alt="<?php echo h($post['name']); ?>" />
 					<p><?php echo makeLink(h($post['message'])); ?><span class="name">（<?php echo h($post['name']); ?>）</span>[<a href="index.php?res=<?php echo h($post['id']); ?>">Re</a>]</p>
 					<p class="day"><a href="view.php?id=<?php echo h($post['id']); ?>"><?php echo h($post['created']); ?></a>
@@ -139,19 +148,30 @@ function makeLink($value)
 
 
 						<!-- リツイートのフォーム -->
-						<form action="RT.php" method="post" >
-							<input type="hidden" name="member_id" value="<?php echo $post['member_id'];?>">
-							<input type="hidden" name="message" value="<?php echo $post['message'];?>">
-							<input type="hidden" name="reply_post_id" value="<?php echo $post['reply_post_id'];?>">
+						<form action="RT.php" method="post">
+							<input type="hidden" name="member_name" value="<?php echo $member['name']; ?>">
+							<input type="hidden" name="member_id" value="<?php echo $post['member_id']; ?>">
+							<input type="hidden" name="message" value="<?php echo $post['message']; ?>">
+							<input type="hidden" name="reply_post_id" value="<?php echo $post['reply_post_id']; ?>">
 							<input type="image" src="images/icon_retweet.png" width="15px" height="15px">
+							<!-- <span class="rt_count">
+								<?php
+								$rt_counts = $db->prepare('SELECT COUNT(*) AS rtcount FROM posts WHERE rt_member_id=' . $members['id']); 
+								$rt_count = $rt_counts->fetch();
+
+								if ($post['rt_member_id']  > 0) {
+									echo ($rt_count['rtcount']);
+								}
+								?>
+							</span> -->
 						</form>
-						
 
 
 
 
 
-						
+
+
 						<!-- いいねのフォーム -->
 						<form action="good.php" method="post">
 							<input type="hidden" name="post_id" value=<?php echo $post['id']; ?>><!-- post['id']が送信される -->
@@ -166,18 +186,10 @@ function makeLink($value)
 							<?php endif; ?>
 						</form>
 
-
 					</p><!-- .day/ -->
 
-
-
-
-
-
 				</div>
-			<?php
-			endforeach;
-			?>
+			<?php endforeach; ?>
 
 			<ul class="paging">
 				<?php
