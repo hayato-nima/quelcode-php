@@ -10,8 +10,39 @@ $goodmessages->execute(array(
 ));
 $goodmessage = $goodmessages->fetch();
 
+
+
+// $_POST['reference']に値があればリツイートの投稿だとわかる
+
+$iineids = $db->prepare('SELECT * FROM good WHERE post_id=? and member_id=?');
+$iineids->execute(array(
+  $_POST['reference'],
+  $_SESSION['id']
+));
+$iineid = $iineids->fetch();
+
+// if ($_POST['reference'] > 0) 
+// {
+//   $rtdelete = $db->prepare('DELETE FROM good WHERE post_id=? AND member_id=?');
+//   $rtdelete->execute(array(
+//     $_POST['reference'],
+//     $_SESSION['id']
+//   ));
+// }
+// else
+if ($_POST['reference'] = 0) 
+{
+  $rtgood = $db->prepare('INSERT INTO good SET post_id=?, member_id=?, created=NOW()');
+  $rtgood->execute(array(
+    $_POST['reference'],
+    $_SESSION['id']
+  ));
+}
+
+
+// var_dump($_POST['reference']);
+
 // いいねテーブルのレコードの削除・挿入
-// if ($goodmessage['post_id'] === $post['id']) {
 if ( $goodmessage['count(*)'] > 0) {
   $delete = $db->prepare('DELETE FROM good WHERE post_id=? AND member_id=?');
   $delete->execute(array(
@@ -28,11 +59,5 @@ if ( $goodmessage['count(*)'] > 0) {
   }
 
 
+header('Location: index.php'); exit();
 
-  $goodpages = $db->query('SELECT COUNT(*) AS gpc FROM posts WHERE id');
-  $goodpage = $goodpages->fetch();
-  $just = $goodpage['gpc'];
-
-  // var_dump($goodmessage['count(*)']);
-  header('Location: index.php?page=()');
-  exit();

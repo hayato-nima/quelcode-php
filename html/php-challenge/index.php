@@ -11,7 +11,8 @@ if (isset($_SESSION['id']) && $_SESSION['time'] + 3600 > time()) {
 	$member = $members->fetch();
 } else {
 	// ログインしていない
-	header('Location: login.php'); exit();
+	header('Location: login.php');
+	exit();
 }
 
 // 投稿を記録する
@@ -24,7 +25,8 @@ if (!empty($_POST)) {
 			$_POST['reply_post_id']
 		));
 
-		header('Location: index.php'); exit();
+		header('Location: index.php');
+		exit();
 	}
 }
 
@@ -58,17 +60,20 @@ if (isset($_REQUEST['res'])) {
 }
 
 // htmlspecialcharsのショートカット
-function h($value) {
+function h($value)
+{
 	return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
 }
 
 // 本文内のURLにリンクを設定します
-function makeLink($value) {
-	return mb_ereg_replace("(https?)(://[[:alnum:]\+\$\;\?\.%,!#~*/:@&=_-]+)", '<a href="\1\2">\1\2</a>' , $value);
+function makeLink($value)
+{
+	return mb_ereg_replace("(https?)(://[[:alnum:]\+\$\;\?\.%,!#~*/:@&=_-]+)", '<a href="\1\2">\1\2</a>', $value);
 }
 ?>
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -105,11 +110,34 @@ function makeLink($value) {
 			?>
 
 				<?php
-				// echo $post['message'];
-				//ここにifで名前を表示
-				var_dump($post['message'])
+				// var_dump($post['reference']);//リツイートの元の投稿のid
+				// var_dump($post['id']);//投稿のid
+				// var_dump($post['picture']);//写真
+				// var_dump($post);
+				// var_dump($posts);
 				?>
+
 				<div class="msg">
+					<?php
+					if ($post['reference']  > 0) { //普通投稿は0 リツイートなら値が1以上
+					?>
+						<p class="day">
+							<?php
+							// リツイートした人の名前を取得して表示
+							// 名前をとるSQLを考える｜｜1つでいける?
+							$rt_names = $db->prepare('SELECT DISTINCT name, member_id FROM members, posts WHERE members.id=?');
+							$rt_names->execute(array(
+								$post['member_id']
+							));
+							$rt_name = $rt_names->fetch();
+							// var_dump($rt_name['name']);
+							echo ($rt_name['name'] . 'さんがリツイートしました');
+							?>
+						</p>
+					<?php
+					}
+					?>
+
 					<img src="member_picture/<?php echo h($post['picture']); ?>" width="48" height="48" alt="<?php echo h($post['name']); ?>" />
 					<p><?php echo makeLink(h($post['message'])); ?><span class="name">（<?php echo h($post['name']); ?>）</span>[<a href="index.php?res=<?php echo h($post['id']); ?>">Re</a>]</p>
 					<p class="day"><a href="view.php?id=<?php echo h($post['id']); ?>"><?php echo h($post['created']); ?></a>
@@ -134,21 +162,35 @@ function makeLink($value) {
 
 
 						<!-- リツイートのフォーム -->
-						<form action="RT.php" method="post" >
-							<input type="hidden" name="member_id" value="<?php echo $post['member_id'];?>">
-							<input type="hidden" name="message" value="<?php echo $post['message'];?>">
-							<input type="hidden" name="reply_post_id" value="<?php echo $post['reply_post_id'];?>">
+						<form action="RT.php" method="post">
+							<input type="hidden" name="message" value="<?php echo $post['message']; ?>">
+							<input type="hidden" name="reference" value="<?php echo $post['id']; ?>">
+							<input type="hidden" name="member_id" value="<?php echo $_SESSION['id']; ?>">
+							<input type="hidden" name="reply_post_id" value="<?php echo $post['reply_post_id']; ?>">
+
 							<input type="image" src="images/icon_retweet.png" width="15px" height="15px">
+							<span class="rt_count">
+								<?php
+								$rt_counts = $db->query("SELECT count(*) as rtcount FROM posts WHERE reference='" . $post['reference'] . "' ");
+								$rt_count = $rt_counts->fetch();
+								if ($post['reference']  > 0) {
+									echo ($rt_count['rtcount']);
+								}
+								// var_dump($rt_count['rtcount']);
+
+								?>
+							</span>
 						</form>
-						
 
 
 
 
 
-						
+
+
 						<!-- いいねのフォーム -->
 						<form action="good.php" method="post">
+							<input type="hidden" name="reference" value=<?php echo $post['reference']; ?>>
 							<input type="hidden" name="post_id" value=<?php echo $post['id']; ?>><!-- post['id']が送信される -->
 							<?php
 							$iines = $db->query('SELECT COUNT(*) AS good_count FROM good WHERE post_id=' . $post['id']); //$post['id]を使って件数を確認する
@@ -161,44 +203,37 @@ function makeLink($value) {
 							<?php endif; ?>
 						</form>
 
-
 					</p><!-- .day/ -->
 
-
-
-
-
-
 				</div>
-			<?php
-			endforeach;
-			?>
+			<?php endforeach; ?>
 
-<ul class="paging">
-<?php
-if ($page > 1) {
-?>
-<li><a href="index.php?page=<?php print($page - 1); ?>">前のページへ</a></li>
-<?php
-} else {
-?>
-<li>前のページへ</li>
-<?php
-}
-?>
-<?php
-if ($page < $maxPage) {
-?>
-<li><a href="index.php?page=<?php print($page + 1); ?>">次のページへ</a></li>
-<?php
-} else {
-?>
-<li>次のページへ</li>
-<?php
-}
-?>
-</ul>
-  </div>
-</div>
+			<ul class="paging">
+				<?php
+				if ($page > 1) {
+				?>
+					<li><a href="index.php?page=<?php print($page - 1); ?>">前のページへ</a></li>
+				<?php
+				} else {
+				?>
+					<li>前のページへ</li>
+				<?php
+				}
+				?>
+				<?php
+				if ($page < $maxPage) {
+				?>
+					<li><a href="index.php?page=<?php print($page + 1); ?>">次のページへ</a></li>
+				<?php
+				} else {
+				?>
+					<li>次のページへ</li>
+				<?php
+				}
+				?>
+			</ul>
+		</div>
+	</div>
 </body>
+
 </html>
