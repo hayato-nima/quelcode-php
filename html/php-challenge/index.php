@@ -46,9 +46,14 @@ $page = min($page, $maxPage);
 $start = ($page - 1) * 5;
 $start = max(0, $start);
 
+
 $posts = $db->prepare('SELECT m.name, m.picture, p.* FROM members m, posts p WHERE m.id=p.member_id ORDER BY p.created DESC LIMIT ?, 5');
 $posts->bindParam(1, $start, PDO::PARAM_INT);
 $posts->execute();
+
+
+
+
 
 // 返信の場合
 if (isset($_REQUEST['res'])) {
@@ -70,6 +75,10 @@ function makeLink($value)
 {
 	return mb_ereg_replace("(https?)(://[[:alnum:]\+\$\;\?\.%,!#~*/:@&=_-]+)", '<a href="\1\2">\1\2</a>', $value);
 }
+
+
+
+
 ?>
 <!DOCTYPE html>
 <html lang="ja">
@@ -105,16 +114,27 @@ function makeLink($value)
 				</div>
 			</form>
 
+
 			<?php
 			foreach ($posts as $post) : //id入っている
 			?>
+				<!-- postのループの開始 
+			いいねとリツイートのフォームを5回ずつ繰り返し表示
+			いいねは押してあった場合に取り消しをするリツイートも同様
+			-->
 
 				<?php
+
 				// var_dump($post['reference']);//リツイートの元の投稿のid
 				// var_dump($post['id']);//投稿のid
 				// var_dump($post['picture']);//写真
+				// var_dump($post['reference']);
 				// var_dump($post);
-				// var_dump($posts);
+				// var_dump($post['']);
+				// var_dump($post['message']);
+				// var_dump($rt_message['reference']);
+				// var_dump($def_name);
+				// var_dump($_POST);
 				?>
 
 				<div class="msg">
@@ -124,13 +144,11 @@ function makeLink($value)
 						<p class="day">
 							<?php
 							// リツイートした人の名前を取得して表示
-							// 名前をとるSQLを考える｜｜1つでいける?
 							$rt_names = $db->prepare('SELECT DISTINCT name, member_id FROM members, posts WHERE members.id=?');
 							$rt_names->execute(array(
 								$post['member_id']
 							));
 							$rt_name = $rt_names->fetch();
-							// var_dump($rt_name['name']);
 							echo ($rt_name['name'] . 'さんがリツイートしました');
 							?>
 						</p>
@@ -138,8 +156,37 @@ function makeLink($value)
 					}
 					?>
 
-					<img src="member_picture/<?php echo h($post['picture']); ?>" width="48" height="48" alt="<?php echo h($post['name']); ?>" />
-					<p><?php echo makeLink(h($post['message'])); ?><span class="name">（<?php echo h($post['name']); ?>）</span>[<a href="index.php?res=<?php echo h($post['id']); ?>">Re</a>]</p>
+					<!-- リツイート時の元投稿の画像への切り替え -->
+					<?php if ($post['reference'] > 0) : ?>
+
+						<?php  //$post['reference']は元投稿のidこれをpostsのidに代入して取得する
+						$def_names = $db->prepare('SELECT * FROM posts WHERE id=? ');
+						$def_names->execute(array(
+							$post['reference']
+						));
+						$def_name = $def_names->fetch();
+						//取得したpostテーブルのmember_idを使ってmembersテーブルの情報を取得する
+						$def_records = $db->prepare('SELECT * FROM members WHERE id=? ');
+						$def_records->execute(array(
+							$def_name['member_id']
+						));
+						$def_record = $def_records->fetch();; ?>
+						<img src="member_picture/<?php echo h($def_record['picture']) ?>
+	" width="48" height="48" alt="<?php echo h($def_record['name']); ?>" />
+					<?php else : ?>
+						<img src="member_picture/<?php echo h($post['picture']) ?>
+ " width="48" height="48" alt="<?php echo h($post['name']); ?>" />
+					<?php endif; ?>
+
+					<!-- メッセージと投稿者名の表示↓ -->
+					<?php if ($post['reference'] > 0) :?>
+						<p><?php echo makeLink(h($post['message'])); ?><span class="name">（<?php echo h($def_record['name']); ?>）</span>[<a href="index.php?res=<?php echo h($post['id']); ?>">Re</a>]</p>
+					<?php else :?>
+						<p><?php echo makeLink(h($post['message'])); ?><span class="name">（<?php echo h($post['name']); ?>）</span>[<a href="index.php?res=<?php echo h($post['id']); ?>">Re</a>]</p>
+					<?php endif; ?>
+
+
+					<!-- 日付と削除の処理↓ -->
 					<p class="day"><a href="view.php?id=<?php echo h($post['id']); ?>"><?php echo h($post['created']); ?></a>
 						<?php
 						if ($post['reply_post_id'] > 0) :
