@@ -77,8 +77,6 @@ function makeLink($value)
 }
 
 
-
-
 ?>
 <!DOCTYPE html>
 <html lang="ja">
@@ -124,13 +122,13 @@ function makeLink($value)
 			-->
 
 				<?php
-
 				// var_dump($post['reference']);//リツイートの元の投稿のid
 				// var_dump($post['id']);//投稿のid
 				// var_dump($post['picture']);//写真
 				// var_dump($post['reference']);
-				// var_dump($post);
-				// var_dump($post['']);
+				// var_dump($post['original_post_id']);
+				// var_dump($post['member_id']);
+				// var_dump($_SESSION['id']);
 				// var_dump($post['message']);
 				// var_dump($rt_message['reference']);
 				// var_dump($def_name);
@@ -139,7 +137,7 @@ function makeLink($value)
 
 				<div class="msg">
 					<?php
-					if ($post['reference']  > 0) { //普通投稿は0 リツイートなら値が1以上
+					if ($post['original_post_id']) { //普通投稿は0 リツイートなら値が1以上
 					?>
 						<p class="day">
 							<?php
@@ -157,20 +155,28 @@ function makeLink($value)
 					?>
 
 					<!-- リツイート時の元投稿の画像への切り替え -->
-					<?php if ($post['reference'] > 0) : ?>
+					<?php if ($post['original_post_id']) : ?>
 
-						<?php  //$post['reference']は元投稿のidこれをpostsのidに代入して取得する
+						<?php  //$post['original_post_id']は元投稿のid これをpostsのidに代入して取得する
+
 						$def_names = $db->prepare('SELECT * FROM posts WHERE id=? ');
 						$def_names->execute(array(
-							$post['reference']
+							$post['original_post_id']
 						));
 						$def_name = $def_names->fetch();
-						//取得したpostテーブルのmember_idを使ってmembersテーブルの情報を取得する
+
+
+						
+						// 取得したpostテーブルのmember_idを使ってmembersテーブルの情報を取得する
 						$def_records = $db->prepare('SELECT * FROM members WHERE id=? ');
 						$def_records->execute(array(
 							$def_name['member_id']
 						));
-						$def_record = $def_records->fetch();; ?>
+						$def_record = $def_records->fetch();
+
+						// var_dump($def_record['name']);
+						?>
+
 						<img src="member_picture/<?php echo h($def_record['picture']) ?>
 	" width="48" height="48" alt="<?php echo h($def_record['name']); ?>" />
 					<?php else : ?>
@@ -179,9 +185,9 @@ function makeLink($value)
 					<?php endif; ?>
 
 					<!-- メッセージと投稿者名の表示↓ -->
-					<?php if ($post['reference'] > 0) :?>
+					<?php if ($post['original_post_id']) : ?>
 						<p><?php echo makeLink(h($post['message'])); ?><span class="name">（<?php echo h($def_record['name']); ?>）</span>[<a href="index.php?res=<?php echo h($post['id']); ?>">Re</a>]</p>
-					<?php else :?>
+					<?php else : ?>
 						<p><?php echo makeLink(h($post['message'])); ?><span class="name">（<?php echo h($post['name']); ?>）</span>[<a href="index.php?res=<?php echo h($post['id']); ?>">Re</a>]</p>
 					<?php endif; ?>
 
@@ -211,16 +217,18 @@ function makeLink($value)
 						<!-- リツイートのフォーム -->
 						<form action="RT.php" method="post">
 							<input type="hidden" name="message" value="<?php echo $post['message']; ?>">
-							<input type="hidden" name="reference" value="<?php echo $post['id']; ?>">
+							<input type="hidden" name="post_id" value="<?php echo $post['id']; ?>">
 							<input type="hidden" name="member_id" value="<?php echo $_SESSION['id']; ?>">
+							<input type="hidden" name="post_member_id" value="<?php echo $post['member_id']; ?>">
+							<input type="hidden" name="original_post_id" value="<?php echo $post['original_post_id']; ?>">
 							<input type="hidden" name="reply_post_id" value="<?php echo $post['reply_post_id']; ?>">
 
 							<input type="image" src="images/icon_retweet.png" width="15px" height="15px">
 							<span class="rt_count">
 								<?php
-								$rt_counts = $db->query("SELECT count(*) as rtcount FROM posts WHERE reference='" . $post['reference'] . "' ");
+								$rt_counts = $db->query("SELECT count(*) as rtcount FROM posts WHERE original_post_id='" . $post['original_post_id'] . "' ");
 								$rt_count = $rt_counts->fetch();
-								if ($post['reference']  > 0) {
+								if ($post['original_post_id']) {
 									echo ($rt_count['rtcount']);
 								}
 								// var_dump($rt_count['rtcount']);
@@ -237,11 +245,21 @@ function makeLink($value)
 
 						<!-- いいねのフォーム -->
 						<form action="good.php" method="post">
-							<input type="hidden" name="reference" value=<?php echo $post['reference']; ?>>
+							<input type="hidden" name="original_post_id" value=<?php echo $post['original_post_id']; ?>>
+
 							<input type="hidden" name="post_id" value=<?php echo $post['id']; ?>><!-- post['id']が送信される -->
+							
 							<?php
-							$iines = $db->query('SELECT COUNT(*) AS good_count FROM good WHERE post_id=' . $post['id']); //$post['id]を使って件数を確認する
+
+							$iines = $db->prepare('SELECT COUNT(*) as good_count FROM good WHERE post_id=?');
+							$iines->execute(array(
+								$post['id']
+							));
 							$iine = $iines->fetch();
+
+							// var_dump($iine['good_count']);
+							// var_dump($post['original_post_id']);
+
 							if ($iine['good_count']) :
 							?>
 								<button class="red" type="submit">❤<span class="goodcount"><?php echo h($iine['good_count']); ?></span></button>
