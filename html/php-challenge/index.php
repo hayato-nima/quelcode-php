@@ -250,20 +250,30 @@ function makeLink($value)
 							<input type="hidden" name="post_id" value=<?php echo $post['id']; ?>><!-- post['id']が送信される -->
 							
 							<?php
-
+							//カウント 通常コメント表示用
 							$iines = $db->prepare('SELECT COUNT(*) as good_count FROM good WHERE post_id=?');
 							$iines->execute(array(
 								$post['id']
 							));
 							$iine = $iines->fetch();
 
+							//カウント リツイートコメント表示用
+							$rtiines = $db->prepare('SELECT COUNT(*) as rtgood_count FROM good WHERE post_id=?');
+							$rtiines->execute(array(
+								$post['original_post_id']
+							));
+							$rtiine = $rtiines->fetch();
+
 							// var_dump($iine['good_count']);
+							// var_dump($rtiine['rtgood_count']);
 							// var_dump($post['original_post_id']);
 
 							if ($iine['good_count']) :
 							?>
 								<button class="red" type="submit">❤<span class="goodcount"><?php echo h($iine['good_count']); ?></span></button>
-							<?php else : ?>
+							<?php elseif ($rtiine['rtgood_count']) : ?>
+								<button class="red" type="submit">❤<span class="goodcount"><?php echo h($rtiine['rtgood_count']); ?></span></button>
+							<?php else: ?>
 								<button type="submit">❤</button>
 							<?php endif; ?>
 						</form>
