@@ -1,3 +1,12 @@
+CREATE TABLE `good` (
+      `id` int(11) NOT NULL AUTO_INCREMENT,
+      `post_id` int(11) NOT NULL,
+      `member_id` int(11) NOT NULL,
+      `created` datetime NOT NULL,
+      `modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
+
 CREATE TABLE `members` (
       `id` int(11) NOT NULL AUTO_INCREMENT,
       `name` varchar(255) NOT NULL,
@@ -12,6 +21,7 @@ CREATE TABLE `members` (
 CREATE TABLE `posts` (
       `id` int(11) NOT NULL AUTO_INCREMENT,
       `message` text NOT NULL,
+      `original_post_id` int(11) NULL,
       `member_id` int(11) NOT NULL,
       `reply_post_id` int(11) NOT NULL,
       `created` datetime NOT NULL,
