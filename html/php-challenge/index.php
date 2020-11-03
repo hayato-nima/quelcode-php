@@ -166,7 +166,7 @@ function makeLink($value)
 						$def_name = $def_names->fetch();
 
 
-						
+
 						// 取得したpostテーブルのmember_idを使ってmembersテーブルの情報を取得する
 						$def_records = $db->prepare('SELECT * FROM members WHERE id=? ');
 						$def_records->execute(array(
@@ -211,74 +211,61 @@ function makeLink($value)
 						endif;
 						?>
 
+						<div style="display:inline-flex">
+
+							<!-- リツイートのフォーム -->
+							<form action="RT.php" method="post">
+								<input type="hidden" name="message" value="<?php echo $post['message']; ?>">
+								<input type="hidden" name="post_id" value="<?php echo $post['id']; ?>">
+								<input type="hidden" name="member_id" value="<?php echo $_SESSION['id']; ?>">
+								<input type="hidden" name="post_member_id" value="<?php echo $post['member_id']; ?>">
+								<input type="hidden" name="original_post_id" value="<?php echo $post['original_post_id']; ?>">
+								<input type="hidden" name="reply_post_id" value="<?php echo $post['reply_post_id']; ?>">
+								<input type="image" src="images/icon_retweet.png" width="15px" height="15px">
+								<span class="rt_count" style="margin-right: 15px;" style="font-size:5px">
+									<?php
+									$rt_counts = $db->query("SELECT count(*) as rtcount FROM posts WHERE original_post_id='" . $post['original_post_id'] . "' ");
+									$rt_count = $rt_counts->fetch();
+									if ($post['original_post_id']) {
+										echo ($rt_count['rtcount']);
+									}
+									// var_dump($rt_count['rtcount']);
+									?>
+								</span>
+							</form>
 
 
-
-						<!-- リツイートのフォーム -->
-						<form action="RT.php" method="post">
-							<input type="hidden" name="message" value="<?php echo $post['message']; ?>">
-							<input type="hidden" name="post_id" value="<?php echo $post['id']; ?>">
-							<input type="hidden" name="member_id" value="<?php echo $_SESSION['id']; ?>">
-							<input type="hidden" name="post_member_id" value="<?php echo $post['member_id']; ?>">
-							<input type="hidden" name="original_post_id" value="<?php echo $post['original_post_id']; ?>">
-							<input type="hidden" name="reply_post_id" value="<?php echo $post['reply_post_id']; ?>">
-
-							<input type="image" src="images/icon_retweet.png" width="15px" height="15px">
-							<span class="rt_count">
+							<!-- いいねのフォーム -->
+							<form action="good.php" method="post">
+								<input type="hidden" name="original_post_id" value=<?php echo $post['original_post_id']; ?>>
+								<input type="hidden" name="post_id" value=<?php echo $post['id']; ?>><!-- post['id']が送信される -->
 								<?php
-								$rt_counts = $db->query("SELECT count(*) as rtcount FROM posts WHERE original_post_id='" . $post['original_post_id'] . "' ");
-								$rt_count = $rt_counts->fetch();
-								if ($post['original_post_id']) {
-									echo ($rt_count['rtcount']);
-								}
-								// var_dump($rt_count['rtcount']);
+								//カウント 通常コメント表示用
+								$iines = $db->prepare('SELECT COUNT(*) as good_count FROM good WHERE post_id=?');
+								$iines->execute(array(
+									$post['id']
+								));
+								$iine = $iines->fetch();
 
+								//カウント リツイートコメント表示用
+								$rtiines = $db->prepare('SELECT COUNT(*) as rtgood_count FROM good WHERE post_id=?');
+								$rtiines->execute(array(
+									$post['original_post_id']
+								));
+								$rtiine = $rtiines->fetch();
+
+								if ($iine['good_count']) :
 								?>
-							</span>
-						</form>
-
-
-
-
-
-
-
-						<!-- いいねのフォーム -->
-						<form action="good.php" method="post">
-							<input type="hidden" name="original_post_id" value=<?php echo $post['original_post_id']; ?>>
-
-							<input type="hidden" name="post_id" value=<?php echo $post['id']; ?>><!-- post['id']が送信される -->
-							
-							<?php
-							//カウント 通常コメント表示用
-							$iines = $db->prepare('SELECT COUNT(*) as good_count FROM good WHERE post_id=?');
-							$iines->execute(array(
-								$post['id']
-							));
-							$iine = $iines->fetch();
-
-							//カウント リツイートコメント表示用
-							$rtiines = $db->prepare('SELECT COUNT(*) as rtgood_count FROM good WHERE post_id=?');
-							$rtiines->execute(array(
-								$post['original_post_id']
-							));
-							$rtiine = $rtiines->fetch();
-
-							// var_dump($iine['good_count']);
-							// var_dump($rtiine['rtgood_count']);
-							// var_dump($post['original_post_id']);
-
-							if ($iine['good_count']) :
-							?>
-								<button class="red" type="submit">❤<span class="goodcount"><?php echo h($iine['good_count']); ?></span></button>
-							<?php elseif ($rtiine['rtgood_count']) : ?>
-								<button class="red" type="submit">❤<span class="goodcount"><?php echo h($rtiine['rtgood_count']); ?></span></button>
-							<?php else: ?>
-								<button type="submit">❤</button>
-							<?php endif; ?>
-						</form>
-
+									<button class="red" type="submit" style="background: none; border: none; cursor: pointer;">❤<span class="goodcount"><?php echo h($iine['good_count']); ?></span></button>
+								<?php elseif ($rtiine['rtgood_count']) : ?>
+									<button class="red" type="submit" style="background: none; border:none; cursor: pointer;">❤<span class="goodcount"><?php echo h($rtiine['rtgood_count']); ?></span></button>
+								<?php else : ?>
+									<button type="submit" style="background: none; border:none; cursor: pointer;">❤</button>
+								<?php endif; ?>
+							</form>
+						</div>
 					</p><!-- .day/ -->
+
 
 				</div>
 			<?php endforeach; ?>
