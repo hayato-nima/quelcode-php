@@ -52,9 +52,6 @@ $posts->bindParam(1, $start, PDO::PARAM_INT);
 $posts->execute();
 
 
-
-
-
 // 返信の場合
 if (isset($_REQUEST['res'])) {
 	$response = $db->prepare('SELECT m.name, m.picture, p.* FROM members m, posts p WHERE m.id=p.member_id AND p.id=? ORDER BY p.created DESC');
@@ -121,20 +118,6 @@ function makeLink($value)
 			いいねは押してあった場合に取り消しをするリツイートも同様
 			-->
 
-				<?php
-				// var_dump($post['reference']);//リツイートの元の投稿のid
-				// var_dump($post['id']);//投稿のid
-				// var_dump($post['picture']);//写真
-				// var_dump($post['reference']);
-				// var_dump($post['original_post_id']);
-				// var_dump($post['member_id']);
-				// var_dump($_SESSION['id']);
-				// var_dump($post['message']);
-				// var_dump($rt_message['reference']);
-				// var_dump($def_name);
-				// var_dump($_POST);
-				?>
-
 				<div class="msg">
 					<?php
 					if ($post['original_post_id']) { //普通投稿は0 リツイートなら値が1以上
@@ -173,8 +156,6 @@ function makeLink($value)
 							$def_name['member_id']
 						));
 						$def_record = $def_records->fetch();
-
-						// var_dump($def_record['name']);
 						?>
 
 						<img src="member_picture/<?php echo h($def_record['picture']) ?>
@@ -229,7 +210,6 @@ function makeLink($value)
 									if ($post['original_post_id']) {
 										echo ($rt_count['rtcount']);
 									}
-									// var_dump($rt_count['rtcount']);
 									?>
 								</span>
 							</form>

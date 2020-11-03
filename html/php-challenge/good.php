@@ -19,12 +19,6 @@ $goodrecords->execute(array(
 ));
 $goodrecord = $goodrecords->fetch();
 
-// var_dump($goodmessage['count(*)']);
-// var_dump($good);
-// var_dump($_POST['original_post_id']);
-
-
-
 
 // いいねテーブルのレコードの削除・挿入
 if ($goodmessage['count(*)'] > 0) {
@@ -58,7 +52,6 @@ if ($goodmessage['count(*)'] > 0) {
     }
   }
 }
-
 
 header('Location: index.php');
 exit();
