@@ -219,13 +219,21 @@ function makeLink($value)
 								$original_count = $original_counts->fetch();
 
 								if ($post['original_post_id']) : ?>
-									<span class="rt_count" style="margin-right: 15px;" style="font-size:5px">
+									<span class="rt_count" style="margin-right: 17px;" >
 										<?php echo ($rt_count['rtcount']); ?>
 									</span>
 								<?php elseif ($post['original_post_id'] == null) : ?>
-									<span class="rt_count" style="margin-right: 15px;" style="font-size:5px">
+
+									<?php if ($original_count['originalcount'] > 0 ) { ?>
+									<span  class="rt_count" style="margin-right: 17px;" >
 										<?php echo ($original_count['originalcount']); ?>
 									</span>
+									<?php } else{?>
+										<span  class="rt_count" style="margin-right: 17px; visibility:hidden" >
+										<?php echo ($original_count['originalcount']); ?>
+									</span>
+									<?php } ?>
+
 								<?php endif; ?>
 							</form>
 
@@ -252,7 +260,7 @@ function makeLink($value)
 
 								if ($iine['good_count']) :
 								?>
-									<button class="red" type="submit" style="background: none; border: none; cursor: pointer;">❤<span class="goodcount"><?php echo h($iine['good_count']); ?></span></button>
+									<button class="red" type="submit" style="background: none; border: none; cursor: pointer; " >❤<span class="goodcount"><?php echo h($iine['good_count']); ?></span></button>
 								<?php elseif ($rtiine['rtgood_count']) : ?>
 									<button class="red" type="submit" style="background: none; border:none; cursor: pointer;">❤<span class="goodcount"><?php echo h($rtiine['rtgood_count']); ?></span></button>
 								<?php else : ?>
