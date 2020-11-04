@@ -120,6 +120,7 @@ function makeLink($value)
 
 				<?php
 				// var_dump($post['id']);
+				// var_dump($post['original_post_id']);
 				?>
 
 
@@ -208,16 +209,26 @@ function makeLink($value)
 								<input type="hidden" name="original_post_id" value="<?php echo $post['original_post_id']; ?>">
 								<input type="hidden" name="reply_post_id" value="<?php echo $post['reply_post_id']; ?>">
 								<input type="image" src="images/icon_retweet.png" width="15px" height="15px">
-								<span class="rt_count" style="margin-right: 15px;" style="font-size:5px">
-									<?php
-									$rt_counts = $db->query("SELECT count(*) as rtcount FROM posts WHERE original_post_id='" . $post['original_post_id'] . "' ");
-									$rt_count = $rt_counts->fetch();
-									if ($post['original_post_id']) {
-										echo ($rt_count['rtcount']);
-									}
-									?>
-								</span>
+								<?php
+								// リツイートしているコメントのリツイート回数表示
+								$rt_counts = $db->query("SELECT count(*) as rtcount FROM posts WHERE original_post_id='" . $post['original_post_id'] . "' ");
+								$rt_count = $rt_counts->fetch();
+
+								//オリジナルコメントのリツイート回数表示
+								$original_counts = $db->query("SELECT count(*) as originalcount FROM posts WHERE original_post_id='" . $post['id'] . "' ");
+								$original_count = $original_counts->fetch();
+
+								if ($post['original_post_id']) : ?>
+									<span class="rt_count" style="margin-right: 15px;" style="font-size:5px">
+										<?php echo ($rt_count['rtcount']); ?>
+									</span>
+								<?php elseif ($post['original_post_id'] == null) : ?>
+									<span class="rt_count" style="margin-right: 15px;" style="font-size:5px">
+										<?php echo ($original_count['originalcount']); ?>
+									</span>
+								<?php endif; ?>
 							</form>
+
 
 
 							<!-- いいねのフォーム -->
