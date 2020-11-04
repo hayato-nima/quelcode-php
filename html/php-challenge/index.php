@@ -118,6 +118,11 @@ function makeLink($value)
 			いいねは押してあった場合に取り消しをするリツイートも同様
 			-->
 
+				<?php
+				// var_dump($post['id']);
+				?>
+
+
 				<div class="msg">
 					<?php
 					if ($post['original_post_id']) { //普通投稿は0 リツイートなら値が1以上
