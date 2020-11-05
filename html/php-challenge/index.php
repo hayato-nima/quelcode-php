@@ -120,10 +120,12 @@ function makeLink($value)
 
 				<?php
 				// var_dump($post);
-				// var_dump($post['id']);
+				// var_dump($post['message']);
 				// var_dump($_SESSION['id']);
 				// var_dump($post['member_id']);
+				// var_dump($post['id']);
 				// var_dump($post['original_post_id']);
+
 				?>
 
 
@@ -201,10 +203,10 @@ function makeLink($value)
 						endif;
 						?>
 
-						<div style="display:inline-flex">
+						<div class="form_co" style="display:inline-flex">
 
 							<!-- リツイートのフォーム -->
-							<form action="RT.php" method="post">
+							<form action="RT.php" method="post" style="height: 10px;">
 								<input type="hidden" name="message" value="<?php echo $post['message']; ?>">
 								<input type="hidden" name="post_id" value="<?php echo $post['id']; ?>">
 								<input type="hidden" name="member_id" value="<?php echo $_SESSION['id']; ?>">
@@ -213,8 +215,6 @@ function makeLink($value)
 								<input type="hidden" name="reply_post_id" value="<?php echo $post['reply_post_id']; ?>">
 
 
-								
-								<input type="image" src="images/icon_retweet.png" width="15px" height="15px">
 								<?php
 								// リツイートしているコメントのリツイート回数表示
 								$rt_counts = $db->query("SELECT count(*) as rtcount FROM posts WHERE original_post_id='" . $post['original_post_id'] . "' ");
@@ -224,29 +224,90 @@ function makeLink($value)
 								$original_counts = $db->query("SELECT count(*) as originalcount FROM posts WHERE original_post_id='" . $post['id'] . "' ");
 								$original_count = $original_counts->fetch();
 
-								if ($post['original_post_id']) : ?>
-									<span class="rt_count" style="margin-right: 17px;">
-										<?php echo ($rt_count['rtcount']); ?>
-									</span>
+								//自分のリツイートだけ緑にする リツイート用のカウント
+								$rt_colors = $db->prepare('SELECT count(*) FROM posts WHERE id=? and member_id=?');
+								$rt_colors->execute(array(
+									$post['id'],
+									$_SESSION['id']
+								));
+								$rt_color = $rt_colors->fetch();
+
+								//自分のリツイートした元のコメントを確認→アイコンの色を変化させる
+								//元コメを取りに行くSQL
+								$original_colors = $db->prepare('SELECT count(*) FROM posts WHERE original_post_id=? and member_id=?');
+								$original_colors->execute(array(
+									$post['id'],
+									$_SESSION['id']
+								));
+								$original_color = $original_colors->fetch();
+
+								// $blues = $db->prepare('SELECT count(*) FROM posts WHERE id=? ');
+								// $blues->execute(array(
+								// 	$original_color['id'],
+									
+								// ));
+								// $blue = $blues->fetch();
+
+								//SELECT * FROM `posts` WHERE original_post_id=815 リツイートを取りに行くSQL
+
+								// var_dump($original_color);
+								// var_dump($original_color['id']);
+								var_dump($original_color['count(*)']);
+								// var_dump($blue['count(*)']);
+								// var_dump($rt_color['count(*)']);
+								// var_dump($original_color['count(*)']);
+								// var_dump($original_count['originalcount']);
+
+								if ($post['original_post_id']) : //ここは消すな 
+								?>
+										<!-- リツイートコメントの場合↓ -->
+									<?php if ($rt_color['count(*)']) { ?>
+										<button type="submit" style="background :none; border: none; cursor: pointer; background-color: #7fd9d2; ">
+											<img src="images/icon_retweet.png" width="15px" height="15px">
+											<span class="rt_count" style=" font-size:14px; ">
+												<?php echo ($rt_count['rtcount']); ?></span></button>
+									<?php } else { ?>
+										<button type="submit" style="background :none; border: none; cursor: pointer; ">
+											<img src="images/icon_retweet.png" width="15px" height="15px">
+											<span class="rt_count" style=" font-size:14px; ">
+												<?php echo ($rt_count['rtcount']); ?></span></button>
+									<?php } ?>
+										
 								<?php elseif ($post['original_post_id'] == null) : ?>
 
+									<!-- 通常コメントの場合↓ -->
 									<?php if ($original_count['originalcount'] > 0) { ?>
-										<span class="rt_count" style="margin-right: 17px;">
-											<?php echo ($original_count['originalcount']); ?>
-										</span>
-									<?php } else { ?>
-										<span class="rt_count" style="margin-right: 17px; visibility:hidden">
-											<?php echo ($original_count['originalcount']); ?>
-										</span>
-									<?php } ?>
 
-								<?php endif; ?>
+										<?php if ($original_color['count(*)']) { ?>
+											<button type="submit" style="background: none; border: none; cursor: pointer ; background-color: #7fd9d2;">
+												<img src="images/icon_retweet.png" width="15px" height="15px">
+												<span class="rt_count" style="font-size:14px;">
+												<?php echo ($original_count['originalcount']); ?></span></button>
+												<?php } else { ?>
+													<button type="submit" style="background: none; border: none; cursor: pointer ;">
+												<img src="images/icon_retweet.png" width="15px" height="15px">
+												<span class="rt_count" style="font-size:14px;">
+												<?php echo ($original_count['originalcount']); ?></span></button>
+												<?php } ?>
+
+
+											<?php } else { ?>
+												
+												<button type="submit" style="background: none; border: none; cursor: pointer;
+												">
+													<img src="images/icon_retweet.png" width="15px" height="15px">
+													<span class="rt_count" style="font-size:14px; visibility:hidden">
+														<?php echo ($original_count['originalcount']); ?></span></button>
+
+											<?php } ?>
+
+										<?php endif; ?>
 							</form>
 
 
 
 							<!-- いいねのフォーム -->
-							<form action="good.php" method="post">
+							<form action="good.php" method="post" style="margin-left: 20px;">
 								<input type="hidden" name="original_post_id" value=<?php echo $post['original_post_id']; ?>>
 								<input type="hidden" name="post_id" value=<?php echo $post['id']; ?>><!-- post['id']が送信される -->
 
