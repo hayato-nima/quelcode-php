@@ -119,7 +119,10 @@ function makeLink($value)
 			-->
 
 				<?php
+				// var_dump($post);
 				// var_dump($post['id']);
+				// var_dump($_SESSION['id']);
+				// var_dump($post['member_id']);
 				// var_dump($post['original_post_id']);
 				?>
 
@@ -208,6 +211,9 @@ function makeLink($value)
 								<input type="hidden" name="post_member_id" value="<?php echo $post['member_id']; ?>">
 								<input type="hidden" name="original_post_id" value="<?php echo $post['original_post_id']; ?>">
 								<input type="hidden" name="reply_post_id" value="<?php echo $post['reply_post_id']; ?>">
+
+
+								
 								<input type="image" src="images/icon_retweet.png" width="15px" height="15px">
 								<?php
 								// リツイートしているコメントのリツイート回数表示
@@ -219,19 +225,19 @@ function makeLink($value)
 								$original_count = $original_counts->fetch();
 
 								if ($post['original_post_id']) : ?>
-									<span class="rt_count" style="margin-right: 17px;" >
+									<span class="rt_count" style="margin-right: 17px;">
 										<?php echo ($rt_count['rtcount']); ?>
 									</span>
 								<?php elseif ($post['original_post_id'] == null) : ?>
 
-									<?php if ($original_count['originalcount'] > 0 ) { ?>
-									<span  class="rt_count" style="margin-right: 17px;" >
-										<?php echo ($original_count['originalcount']); ?>
-									</span>
-									<?php } else{?>
-										<span  class="rt_count" style="margin-right: 17px; visibility:hidden" >
-										<?php echo ($original_count['originalcount']); ?>
-									</span>
+									<?php if ($original_count['originalcount'] > 0) { ?>
+										<span class="rt_count" style="margin-right: 17px;">
+											<?php echo ($original_count['originalcount']); ?>
+										</span>
+									<?php } else { ?>
+										<span class="rt_count" style="margin-right: 17px; visibility:hidden">
+											<?php echo ($original_count['originalcount']); ?>
+										</span>
 									<?php } ?>
 
 								<?php endif; ?>
@@ -243,26 +249,65 @@ function makeLink($value)
 							<form action="good.php" method="post">
 								<input type="hidden" name="original_post_id" value=<?php echo $post['original_post_id']; ?>>
 								<input type="hidden" name="post_id" value=<?php echo $post['id']; ?>><!-- post['id']が送信される -->
+
 								<?php
-								//カウント 通常コメント表示用
+								//いいねカウント 通常コメント表示用
 								$iines = $db->prepare('SELECT COUNT(*) as good_count FROM good WHERE post_id=?');
 								$iines->execute(array(
 									$post['id']
 								));
 								$iine = $iines->fetch();
 
-								//カウント リツイートコメント表示用
+								//いいねカウント リツイートコメント表示用
 								$rtiines = $db->prepare('SELECT COUNT(*) as rtgood_count FROM good WHERE post_id=?');
 								$rtiines->execute(array(
 									$post['original_post_id']
 								));
 								$rtiine = $rtiines->fetch();
 
+								//goodテーブルを検索 自分のいいねだけ赤くする用
+								//リツイート用
+								$my_iines = $db->prepare('SELECT count(*) FROM good WHERE post_id=? and member_id=?');
+								$my_iines->execute(array(
+									$post['original_post_id'],
+									$_SESSION['id']
+								));
+								$my_iine = $my_iines->fetch();
+
+								//元コメント用
+								$rt_iines = $db->prepare('SELECT count(*) FROM good WHERE post_id=? and member_id=?');
+								$rt_iines->execute(array(
+									$post['id'],
+									$_SESSION['id']
+								));
+								$rt_iine = $rt_iines->fetch();
+
+
+
+
+								// var_dump($my_iine['count(*)']);
+								// var_dump($rt_iine['count(*)']);
+
+
 								if ($iine['good_count']) :
 								?>
-									<button class="red" type="submit" style="background: none; border: none; cursor: pointer; " >❤<span class="goodcount"><?php echo h($iine['good_count']); ?></span></button>
+									<!-- 通常コメントに対して 自分のいいねだけ赤くする -->
+									<?php if ($rt_iine['count(*)']) { ?>
+										<button class="red" type="submit" style="background: none; border: none; cursor: pointer; ">❤<span class="goodcount"><?php echo h($iine['good_count']); ?></span></button>
+									<?php } else { ?>
+										<button type="submit" style="background: none; border: none; cursor: pointer; ">❤<span class="goodcount"><?php echo h($iine['good_count']); ?></span></button>
+									<?php } ?>
+
 								<?php elseif ($rtiine['rtgood_count']) : ?>
-									<button class="red" type="submit" style="background: none; border:none; cursor: pointer;">❤<span class="goodcount"><?php echo h($rtiine['rtgood_count']); ?></span></button>
+
+									<!--リツイートに対して 自分のいいねだけ赤くする  -->
+									<?php if ($my_iine['count(*)']) { ?>
+										<button class="red" type="submit" style="background: none; border:none; cursor: pointer;">❤<span class="goodcount"><?php echo h($rtiine['rtgood_count']); ?></span></button>
+									<?php } else { ?>
+										<button type="submit" style="background: none; border:none; cursor: pointer;">❤<span class="goodcount"><?php echo h($rtiine['rtgood_count']); ?></span></button>
+									<?php } ?>
+
+
 								<?php else : ?>
 									<button type="submit" style="background: none; border:none; cursor: pointer;">❤</button>
 								<?php endif; ?>
