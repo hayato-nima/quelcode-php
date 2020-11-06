@@ -157,11 +157,9 @@ function makeLink($value)
 						$def_record = $def_records->fetch();
 						?>
 
-						<img src="member_picture/<?php echo h($def_record['picture']) ?>
-	" width="48" height="48" alt="<?php echo h($def_record['name']); ?>" />
+						<img src="member_picture/<?php echo h($def_record['picture']) ?>" width="48" height="48" alt="<?php echo h($def_record['name']); ?>" />
 					<?php else : ?>
-						<img src="member_picture/<?php echo h($post['picture']) ?>
- " width="48" height="48" alt="<?php echo h($post['name']); ?>" />
+						<img src="member_picture/<?php echo h($post['picture']) ?>" width="48" height="48" alt="<?php echo h($post['name']); ?>" />
 					<?php endif; ?>
 
 					<!-- メッセージと投稿者名の表示↓ -->
@@ -234,9 +232,9 @@ function makeLink($value)
 									<!-- リツイートコメントの場合の処理↓ -->
 									<?php if ($rt_color['count(*)']) { ?>
 
-										<button type="submit" style="background :none; border: none; cursor: pointer; background-color: #7fd9d2; ">
-											<img src="images/icon_retweet.png" width="15px" height="15px">
-											<span class="rt_count" style=" font-size:14px; ">
+										<button type="submit" style="background :none; border: none; cursor: pointer;">
+											<img src="images/icon_retweet_green.png" width="15px" height="15px">
+											<span class="rt_count" style=" font-size:14px; color: rgb(0, 255, 83);">
 												<?php echo ($rt_count['rtcount']); ?></span></button>
 									<?php } else { ?>
 										<button type="submit" style="background :none; border: none; cursor: pointer; ">
@@ -251,14 +249,14 @@ function makeLink($value)
 									<?php if ($original_count['originalcount'] > 0) { ?>
 
 										<?php if ($original_color['count(*)']) { ?>
-											<button type="submit" style="background: none; border: none; cursor: pointer ; background-color: #7fd9d2;">
-												<img src="images/icon_retweet.png" width="15px" height="15px">
-												<span class="rt_count" style="font-size:14px;">
+											<button class="blue" type="submit" style="background: none; border: none; cursor: pointer ; ">
+												<img src="images/icon_retweet_green.png" width="15px" height="15px">
+												<span class="rt_count" style="font-size:14px; color: rgb(0, 255, 83);">
 													<?php echo ($original_count['originalcount']); ?></span></button>
 										<?php } else { ?>
 											<button type="submit" style="background: none; border: none; cursor: pointer ;">
 												<img src="images/icon_retweet.png" width="15px" height="15px">
-												<span class="rt_count" style="font-size:14px;">
+												<span class="rt_count" style="font-size:14px;" >
 													<?php echo ($original_count['originalcount']); ?></span></button>
 										<?php } ?>
 
