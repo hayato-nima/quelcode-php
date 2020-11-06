@@ -115,19 +115,7 @@ function makeLink($value)
 			?>
 				<!-- postのループの開始 
 			いいねとリツイートのフォームを5回ずつ繰り返し表示
-			いいねは押してあった場合に取り消しをするリツイートも同様
-			-->
-
-				<?php
-				// var_dump($post);
-				// var_dump($post['message']);
-				// var_dump($_SESSION['id']);
-				// var_dump($post['member_id']);
-				// var_dump($post['id']);
-				// var_dump($post['original_post_id']);
-
-				?>
-
+			いいねは押してあった場合に取り消しをするリツイートも同様-->
 
 				<div class="msg">
 					<?php
@@ -203,9 +191,9 @@ function makeLink($value)
 						endif;
 						?>
 
-						<div class="form_co" style="display:inline-flex">
-
-							<!-- リツイートのフォーム -->
+						<div style="display:inline-flex">
+							<!-- リツイートのフォーム 
+						必要な値はtype-hiddenで飛ばし、ファイル移動の起点はbuttonタグ-->
 							<form action="RT.php" method="post" style="height: 10px;">
 								<input type="hidden" name="message" value="<?php echo $post['message']; ?>">
 								<input type="hidden" name="post_id" value="<?php echo $post['id']; ?>">
@@ -214,13 +202,13 @@ function makeLink($value)
 								<input type="hidden" name="original_post_id" value="<?php echo $post['original_post_id']; ?>">
 								<input type="hidden" name="reply_post_id" value="<?php echo $post['reply_post_id']; ?>">
 
-
 								<?php
-								// リツイートしているコメントのリツイート回数表示
+								// リツイートしているコメント確認する→ボタンの横に表示
+								//postsテーブルのoriginal_post_idに$post['original_post_id']を当てはめリツイートしているかを確認
 								$rt_counts = $db->query("SELECT count(*) as rtcount FROM posts WHERE original_post_id='" . $post['original_post_id'] . "' ");
 								$rt_count = $rt_counts->fetch();
 
-								//オリジナルコメントのリツイート回数表示
+								//元のコメントにも回数を表示させたいが、元のコメントは$post['original_post_id']がnullのため、$post['id']を代入して確認する
 								$original_counts = $db->query("SELECT count(*) as originalcount FROM posts WHERE original_post_id='" . $post['id'] . "' ");
 								$original_count = $original_counts->fetch();
 
@@ -233,7 +221,7 @@ function makeLink($value)
 								$rt_color = $rt_colors->fetch();
 
 								//自分のリツイートした元のコメントを確認→アイコンの色を変化させる
-								//元コメを取りに行くSQL
+								//元コメントが自分のリツイートしたかをを取りに行くSQL｜postのidをoriginnal_post_idに入れるとリツイートのレコードが取れる｜尚且つセッションidを入れることで自分のものだけ取り出せる｜これをカウントし、アイコンの色変化の判定に使用する
 								$original_colors = $db->prepare('SELECT count(*) FROM posts WHERE original_post_id=? and member_id=?');
 								$original_colors->execute(array(
 									$post['id'],
@@ -241,27 +229,11 @@ function makeLink($value)
 								));
 								$original_color = $original_colors->fetch();
 
-								// $blues = $db->prepare('SELECT count(*) FROM posts WHERE id=? ');
-								// $blues->execute(array(
-								// 	$original_color['id'],
-									
-								// ));
-								// $blue = $blues->fetch();
-
-								//SELECT * FROM `posts` WHERE original_post_id=815 リツイートを取りに行くSQL
-
-								// var_dump($original_color);
-								// var_dump($original_color['id']);
-								var_dump($original_color['count(*)']);
-								// var_dump($blue['count(*)']);
-								// var_dump($rt_color['count(*)']);
-								// var_dump($original_color['count(*)']);
-								// var_dump($original_count['originalcount']);
-
-								if ($post['original_post_id']) : //ここは消すな 
+								if ($post['original_post_id']) :
 								?>
-										<!-- リツイートコメントの場合↓ -->
+									<!-- リツイートコメントの場合の処理↓ -->
 									<?php if ($rt_color['count(*)']) { ?>
+
 										<button type="submit" style="background :none; border: none; cursor: pointer; background-color: #7fd9d2; ">
 											<img src="images/icon_retweet.png" width="15px" height="15px">
 											<span class="rt_count" style=" font-size:14px; ">
@@ -272,44 +244,41 @@ function makeLink($value)
 											<span class="rt_count" style=" font-size:14px; ">
 												<?php echo ($rt_count['rtcount']); ?></span></button>
 									<?php } ?>
-										
+
 								<?php elseif ($post['original_post_id'] == null) : ?>
 
-									<!-- 通常コメントの場合↓ -->
+									<!-- 通常コメントの場合の処理↓ -->
 									<?php if ($original_count['originalcount'] > 0) { ?>
 
 										<?php if ($original_color['count(*)']) { ?>
 											<button type="submit" style="background: none; border: none; cursor: pointer ; background-color: #7fd9d2;">
 												<img src="images/icon_retweet.png" width="15px" height="15px">
 												<span class="rt_count" style="font-size:14px;">
-												<?php echo ($original_count['originalcount']); ?></span></button>
-												<?php } else { ?>
-													<button type="submit" style="background: none; border: none; cursor: pointer ;">
+													<?php echo ($original_count['originalcount']); ?></span></button>
+										<?php } else { ?>
+											<button type="submit" style="background: none; border: none; cursor: pointer ;">
 												<img src="images/icon_retweet.png" width="15px" height="15px">
 												<span class="rt_count" style="font-size:14px;">
-												<?php echo ($original_count['originalcount']); ?></span></button>
-												<?php } ?>
+													<?php echo ($original_count['originalcount']); ?></span></button>
+										<?php } ?>
 
+									<?php } else { ?>
 
-											<?php } else { ?>
-												
-												<button type="submit" style="background: none; border: none; cursor: pointer;
+										<button type="submit" style="background: none; border: none; cursor: pointer;
 												">
-													<img src="images/icon_retweet.png" width="15px" height="15px">
-													<span class="rt_count" style="font-size:14px; visibility:hidden">
-														<?php echo ($original_count['originalcount']); ?></span></button>
+											<img src="images/icon_retweet.png" width="15px" height="15px">
+											<span class="rt_count" style="font-size:14px; visibility:hidden">
+												<?php echo ($original_count['originalcount']); ?></span></button>
 
-											<?php } ?>
-
-										<?php endif; ?>
+									<?php } ?>
+								<?php endif; ?>
 							</form>
 
 
-
-							<!-- いいねのフォーム -->
+							<!-- いいねのフォーム｜必要な値はinput type="hiddenで送信、ファイル移動のトリガーはbuttonタグ-->
 							<form action="good.php" method="post" style="margin-left: 20px;">
 								<input type="hidden" name="original_post_id" value=<?php echo $post['original_post_id']; ?>>
-								<input type="hidden" name="post_id" value=<?php echo $post['id']; ?>><!-- post['id']が送信される -->
+								<input type="hidden" name="post_id" value=<?php echo $post['id']; ?>>
 
 								<?php
 								//いいねカウント 通常コメント表示用
@@ -343,13 +312,6 @@ function makeLink($value)
 								));
 								$rt_iine = $rt_iines->fetch();
 
-
-
-
-								// var_dump($my_iine['count(*)']);
-								// var_dump($rt_iine['count(*)']);
-
-
 								if ($iine['good_count']) :
 								?>
 									<!-- 通常コメントに対して 自分のいいねだけ赤くする -->
@@ -375,7 +337,6 @@ function makeLink($value)
 							</form>
 						</div>
 					</p><!-- .day/ -->
-
 
 				</div>
 			<?php endforeach; ?>

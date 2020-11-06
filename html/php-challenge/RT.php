@@ -32,13 +32,6 @@ $rt_counts->execute(array(
 $rt_count = $rt_counts->fetch();
 
 
-// var_dump($_POST);
-// var_dump($rt_count['count(*)']);
-// var_dump($_POST['original_post_id']);
-// var_dump($_SESSION['id']);
-// var_dump($original_message['member_id']);
-
-
 if ($rt_message['count(*)'] > 0) { //ボタンを押した押してないの処理 カウントの結果で判断する
   // レコードを削除 ログインしているIDと投稿のIDが同じ場合、削除できるようにする
   if ($_SESSION['id'] === $original_message['member_id']) {
@@ -74,7 +67,7 @@ if ($rt_message['count(*)'] > 0) { //ボタンを押した押してないの処�
         $_SESSION['id']
       ));
     } else {
-      // 通常メッセージをリツイートした場合のレコード挿入
+      // 通常コメントをリツイートした場合のレコード挿入
       $rt = $db->prepare('INSERT INTO posts SET message=?,  original_post_id=?, member_id=?, reply_post_id=?, created=NOW()');
       $rt->execute(array(
         $_POST['message'],
