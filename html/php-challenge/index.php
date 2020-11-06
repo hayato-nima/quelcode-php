@@ -227,25 +227,45 @@ function makeLink($value)
 								));
 								$original_color = $original_colors->fetch();
 
+								//リツイートした際に他人のリツイートのアイコンも変化させるようにしたいのでテーブルのoriginal_post_idカラムに$post['original_post_id']を当てはめて、尚且つ自分のリツイートだということを確認するためにログインユーザーの$_SESSION['id']を入れる
+								$others_colors = $db->prepare('SELECT count(*) FROM posts WHERE original_post_id=? and member_id=?');
+								$others_colors->execute(array(
+									$post['original_post_id'],
+									$_SESSION['id']
+								));
+								$others_color = $others_colors->fetch();
+
+
 								if ($post['original_post_id']) :
 								?>
-									<!-- リツイートコメントの場合の処理↓ -->
+									<!-- リツイートコメントの場合の色の変化処理↓ -->
 									<?php if ($rt_color['count(*)']) { ?>
 
 										<button type="submit" style="background :none; border: none; cursor: pointer;">
 											<img src="images/icon_retweet_green.png" width="15px" height="15px">
 											<span class="rt_count" style=" font-size:14px; color: rgb(0, 255, 83);">
 												<?php echo ($rt_count['rtcount']); ?></span></button>
+
 									<?php } else { ?>
-										<button type="submit" style="background :none; border: none; cursor: pointer; ">
-											<img src="images/icon_retweet.png" width="15px" height="15px">
-											<span class="rt_count" style=" font-size:14px; ">
-												<?php echo ($rt_count['rtcount']); ?></span></button>
+										<!-- ここで他人のリツイートを確認して色の表示を変える-->
+										<?php if ($others_color['count(*)']) { ?>
+											<button type="submit" style="background :none; border: none; cursor: pointer;">
+												<img src="images/icon_retweet_green.png" width="15px" height="15px">
+												<span class="rt_count" style=" font-size:14px; color: rgb(0, 255, 83);">
+													<?php echo ($rt_count['rtcount']); ?></span></button>
+										<?php } else { ?>
+											<button type="submit" style="background :none; border: none; cursor: pointer; ">
+												<img src="images/icon_retweet.png" width="15px" height="15px">
+												<span class="rt_count" style=" font-size:14px; ">
+													<?php echo ($rt_count['rtcount']); ?></span></button>
+										<?php } ?>
+
 									<?php } ?>
 
 								<?php elseif ($post['original_post_id'] == null) : ?>
+									<!-- postsテーブルのoriginal_post_idが空の場合、リツイートではないということが分かる -->
 
-									<!-- 通常コメントの場合の処理↓ -->
+									<!-- 通常コメントの場合の色の変化の処理↓ -->
 									<?php if ($original_count['originalcount'] > 0) { ?>
 
 										<?php if ($original_color['count(*)']) { ?>
@@ -256,14 +276,14 @@ function makeLink($value)
 										<?php } else { ?>
 											<button type="submit" style="background: none; border: none; cursor: pointer ;">
 												<img src="images/icon_retweet.png" width="15px" height="15px">
-												<span class="rt_count" style="font-size:14px;" >
+												<span class="rt_count" style="font-size:14px;">
 													<?php echo ($original_count['originalcount']); ?></span></button>
+
 										<?php } ?>
 
 									<?php } else { ?>
 
-										<button type="submit" style="background: none; border: none; cursor: pointer;
-												">
+										<button type="submit" style="background: none; border: none; cursor: pointer;	">
 											<img src="images/icon_retweet.png" width="15px" height="15px">
 											<span class="rt_count" style="font-size:14px; visibility:hidden">
 												<?php echo ($original_count['originalcount']); ?></span></button>
